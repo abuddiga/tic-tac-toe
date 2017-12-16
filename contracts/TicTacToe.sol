@@ -43,11 +43,12 @@ contract TicTacToe {
     address public playerOne;
     address public playerTwo;
     address public currentTurn;
-    address public nextPlayer;
+    address private nextPlayer;
     address public winner;
 
     bool public ended;
-
+    
+    uint moves;
     uint playerOneScore;
     uint playerTwoScore;
 
@@ -55,16 +56,17 @@ contract TicTacToe {
     uint[8] winningScores = [7, 56, 73, 84, 146, 273, 292, 448];
     uint[9] occupied; // in the occupied array, 1s represent occupied squares (by either player)
 
-    event GameEnded(address winner);
+    event GameWon(address winner);
+    event GameDrawn(string msg);
     event Error(string msg);
 
     modifier gameNotOver() {
-        assert(!ended);
+        require(!ended);
         _;
     }
 
     modifier isPlayersTurn(address sender) {
-        assert(sender == currentTurn);
+        require(sender == currentTurn);
         _;
     }
 
@@ -76,10 +78,6 @@ contract TicTacToe {
 
     /// Create a new Tic-Tac-Toe Game
     function TicTacToe() public {
-        // playerOne = Player({
-        //     playerId: msg.sender,
-        //     score: 0
-        // });
         playerOne = msg.sender;
         playerOneScore = 0;
         currentTurn = playerOne;
@@ -93,11 +91,7 @@ contract TicTacToe {
     returns(bool) {
         require(playerOne != 0);
         require(playerTwo == 0);
-        // gameNotOver;
-        // playerTwo = Player({
-        //     playerId: msg.sender,
-        //     score: 0
-        // });
+        require(playerOne != msg.sender);
         playerTwo = msg.sender;
         playerTwoScore = 0;
         return true;
@@ -129,13 +123,17 @@ contract TicTacToe {
         }
 
         occupied[square] = 1;
+        moves += 1;
 
         if (checkForWin(scoreToCheck)) {
             winner = currentTurn;
             ended = true;
-            GameEnded(winner);
+            GameWon(winner);
+        } else if (moves == 8) {
+            GameDrawn("The game is a draw!");
+            ended = true;
         }
-
+        
         currentTurn = nextPlayer;
 
         return true;
