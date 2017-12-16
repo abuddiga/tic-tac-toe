@@ -40,37 +40,31 @@ pragma solidity 0.4.18;
 // }
 
 contract TicTacToe {
-
-    struct Player {
-        address playerId;
-        uint score;
-    }
-
-    Player public playerOne;
-    Player public playerTwo;
-    Player public currentTurn;
-    Player public nextPlayer;
-    Player public winner;
+    address public playerOne;
+    address public playerTwo;
+    address public currentTurn;
+    address public nextPlayer;
+    address public winner;
 
     bool public ended;
 
-    // uint playerOneScore;
-    // uint playerTwoScore;
+    uint playerOneScore;
+    uint playerTwoScore;
 
     uint[9] squareValues = [1, 2, 4, 8, 16, 32, 64, 128, 256];
     uint[8] winningScores = [7, 56, 73, 84, 146, 273, 292, 448];
     uint[9] occupied; // in the occupied array, 1s represent occupied squares (by either player)
 
-    event GameEnded(Player winner);
+    event GameEnded(address winner);
     event Error(string msg);
 
     modifier gameNotOver() {
-        require(!ended);
+        assert(!ended);
         _;
     }
 
     modifier isPlayersTurn(address sender) {
-        require(sender == currentTurn.playerId);
+        assert(sender == currentTurn);
         _;
     }
 
@@ -82,10 +76,12 @@ contract TicTacToe {
 
     /// Create a new Tic-Tac-Toe Game
     function TicTacToe() public {
-        playerOne = Player({
-            playerId: msg.sender,
-            score: 0
-        });
+        // playerOne = Player({
+        //     playerId: msg.sender,
+        //     score: 0
+        // });
+        playerOne = msg.sender;
+        playerOneScore = 0;
         currentTurn = playerOne;
         ended = false;
     }
@@ -95,13 +91,15 @@ contract TicTacToe {
     public
     gameNotOver
     returns(bool) {
-        require(playerOne.playerId != 0);
-        require(playerTwo.playerId == 0);
+        require(playerOne != 0);
+        require(playerTwo == 0);
         // gameNotOver;
-        playerTwo = Player({
-            playerId: msg.sender,
-            score: 0
-        });
+        // playerTwo = Player({
+        //     playerId: msg.sender,
+        //     score: 0
+        // });
+        playerTwo = msg.sender;
+        playerTwoScore = 0;
         return true;
     }
 
@@ -116,21 +114,14 @@ contract TicTacToe {
     returns(bool) {
         uint scoreToCheck;
 
-        // conditions
-        // gameNotOver;
-        // isPlayersTurn(msg.sender);
-        // squareIsEmpty(square);
-
-        // effects
-
-        if (msg.sender == playerOne.playerId) {
-            playerOne.score += squareValues[square];
-            scoreToCheck = playerOne.score;
+        if (msg.sender == playerOne) {
+            playerOneScore += squareValues[square];
+            scoreToCheck = playerOneScore;
             nextPlayer = playerTwo;
 
-        } else if (msg.sender == playerTwo.playerId) {
-            playerTwo.score += squareValues[square];
-            scoreToCheck = playerTwo.score;
+        } else if (msg.sender == playerTwo) {
+            playerTwoScore += squareValues[square];
+            scoreToCheck = playerTwoScore;
             nextPlayer = playerOne;
         } else {
             Error("You are not one of the two players of this game!");
@@ -150,7 +141,7 @@ contract TicTacToe {
         return true;
     }
 
-    function checkForWin(uint score) private returns(bool) {
+    function checkForWin(uint score) private view returns(bool) {
         for (uint i = 0; i < winningScores.length; i += 1) {
             if ((winningScores[i] & score) == winningScores[i]) {
                 return true;
