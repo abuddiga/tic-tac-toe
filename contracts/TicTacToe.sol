@@ -38,3 +38,38 @@ contract TicTacToe {
     }
 
 }
+
+contract TicTacToe {
+    address public playerOne;
+    address public playerTwo;
+    address public currentTurn;
+    address public winner;
+
+    bool public ended;
+
+    enum SquareStates {OwnedByPlayerOne, OwnedByPlayerTwo}
+
+    SquareStates[3][3] public board;
+
+    event GameEnded(address winner);
+
+
+    /// Create a new Tic-Tac-Toe Game
+    function TicTacToe() public {
+        playerOne = msg.sender;
+        currentTurn = msg.sender;
+        ended = false;
+    }
+
+    /// Join game as playerTwo
+    function joinGame() public {
+        require(playerOne != 0);
+        require(!ended);
+        playerTwo = msg.sender;
+        return true;
+    }
+
+    function makeMove() public returns(bool) {
+
+    }
+}
